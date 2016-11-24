@@ -5,7 +5,40 @@ import * as stream from "stream";
 import { Runner as TslintRunner } from "tslint/lib/runner";
 import { IReplacementJson, IRuleFailureJson } from "./ruleFailureJson";
 
-import { ITslintRunnerSettings } from "./autotslinter";
+/**
+ * Settings to run waves of TSLint.
+ */
+export interface ITslintRunnerSettings /* overrides TSLint.IRunnerOptions */ {
+    /**
+     * Path to a configuration file.
+     */
+    config?: string;
+
+    /**
+     * Exclude globs from path expansion.
+     */
+    exclude?: string | string[];
+
+    /**
+     * File paths to lint.
+     */
+    files?: string[];
+
+    /**
+     * tsconfig.json file.
+     */
+    project?: string;
+
+    /**
+     * Rules directory paths.
+     */
+    rulesDirectory?: string | string[];
+
+    /**
+     * Whether to enable type checking when linting a project.
+     */
+    typeCheck?: boolean;
+}
 
 /**
  * Provides waves of TSLint failure fixes as file mutations.
@@ -36,7 +69,7 @@ export class TslintMutationsProvider implements IMutationsProvider {
         this.stream = new stream.PassThrough();
         this.runner = new TslintRunner(
             Object.assign(
-                {},
+                {} as any,
                 settings,
                 {
                     format: "json"
