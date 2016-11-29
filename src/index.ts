@@ -1,6 +1,7 @@
 import { AutoMutator } from "automutate/lib/automutator";
 import { ConsoleLogger } from "automutate/lib/loggers/consoleLogger";
 import { IFileMutationSettings, FileMutationsApplier } from "automutate/lib/mutationsAppliers/fileMutationsApplier";
+import * as path from "path";
 
 import { ITslintRunnerSettings, TslintMutationsProvider } from "./tslintMutationsProvider";
 
@@ -12,11 +13,6 @@ export interface IAutoTslintSettings {
      * Settings to run waves of TSLint.
      */
     linter: ITslintRunnerSettings;
-
-    /**
-     * Settings for manipulating local files.
-     */
-    mutations?: IFileMutationSettings;
 }
 
 /**
@@ -32,7 +28,13 @@ export class AutoTslinter extends AutoMutator {
         const logger: ConsoleLogger = new ConsoleLogger();
 
         super(
-            new FileMutationsApplier(logger, settings.mutations),
+            new FileMutationsApplier(
+                logger,
+                {
+                    mutatorDirectories: [
+                        path.join(__dirname, "../node_modules/autotslint/src/mutators")
+                    ]
+                }),
             new TslintMutationsProvider(settings.linter),
             logger);
     }
