@@ -52,7 +52,7 @@ export class TslintMutationsProvider implements IMutationsProvider {
     /**
      * Intermediary stream to hold lint results.
      */
-    private readonly stream: stream.PassThrough = new stream.PassThrough();
+    private readonly stream: stream.PassThrough;
 
     /**
      * Settings to run TSLint.
@@ -71,6 +71,7 @@ export class TslintMutationsProvider implements IMutationsProvider {
      */
     public constructor(settings: ITslintRunnerSettings) {
         this.settings = settings;
+        this.stream = new stream.PassThrough();
         this.runner = new TslintRunner(
             Object.assign(
                 {} as any,
@@ -88,10 +89,16 @@ export class TslintMutationsProvider implements IMutationsProvider {
     public async provide(): Promise<IMutationsWave> {
         return new Promise((resolve, reject): void => {
             this.runner.run((): void => {
-                const wat = this.stream.read().toString();
+                const results: Buffer | null = this.stream.read();
+                
+                if (!results) {
+                    resolve({});
+                    return;
+                }
+
                 resolve({
                     fileMutations: this.fixesTransformer.groupFailuresToFileMutations(
-                        (JSON.parse(wat) as IRuleFailureJson[])
+                        (JSON.parse(results.toString()) as IRuleFailureJson[])
                             .filter((ruleFailure: IRuleFailureJson): boolean => !!ruleFailure.fix))
                 });
             });
