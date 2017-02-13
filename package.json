@@ -1,16 +1,21 @@
 {
   "name": "autotslint",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Fixes TSLint errors in source code.",
   "directories": {
     "test": "test"
   },
+  "bin": {
+    "autotslint": "./bin/autotslint"
+  },
   "dependencies": {
     "automutate": "^0.2.1",
+    "optimist": "^0.6.1",
     "tslint": "^4.4.2"
   },
   "devDependencies": {
     "@types/node": "^7.0.5",
+    "@types/optimist": "0.0.29",
     "automutate-tests": "^0.1.0",
     "chai": "^3.5.0",
     "del": "^2.2.2",

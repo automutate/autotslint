@@ -32,15 +32,12 @@ export class AutoTslinter extends AutoMutator {
      */
     public constructor(settings: IAutoTslintSettings) {
         const logger: ILogger = settings.logger || new ConsoleLogger();
+        const mutatorDirectories: string[] = [
+            path.join(__dirname, "./mutators")
+        ];
 
         super(
-            new FileMutationsApplier(
-                logger,
-                {
-                    mutatorDirectories: [
-                        path.join(__dirname, "../node_modules/autotslint/src/mutators")
-                    ]
-                }),
+            new FileMutationsApplier(logger, { mutatorDirectories }),
             new TslintMutationsProvider(settings.linter),
             logger);
     }
