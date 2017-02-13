@@ -5,7 +5,7 @@ Applies fix suggestions reported by [TSLint](https://github.com/palantir/tslint)
 ## CLI Usage
 
 ```cmd
-npm install autotslint
+npm install -g autotslint tslint typescript
 autotslint [files...]
 ```
 

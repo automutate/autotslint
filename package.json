@@ -1,6 +1,6 @@
 {
   "name": "autotslint",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Fixes TSLint errors in source code.",
   "directories": {
     "test": "test"
@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "automutate": "^0.2.1",
-    "optimist": "^0.6.1",
-    "tslint": "^4.4.2"
+    "optimist": "^0.6.1"
   },
   "devDependencies": {
     "@types/node": "^7.0.5",
@@ -30,7 +29,7 @@
     "typescript": "^2.0.10"
   },
   "peerDependencies": {
-    "tslint": "^4.0.3"
+    "tslint": "^4.4.3"
   },
   "scripts": {
     "test": "gulp test"
