@@ -2,18 +2,18 @@
 
 Applies fix suggestions reported by [TSLint](https://github.com/palantir/tslint), accounting for file conflicts and multiple waves of fixes.
 
-## Usage
+## CLI Usage
 
 ```cmd
-npm install autotslint-cli autotslint tslint typescript
-autotslint-cli [files...]
+npm install autotslint
+autotslint [files...]
 ```
 
 ## Structure
 
 This project uses [automutate](https://github.com/automutate/automutate) to take in waves of [TSLint](https://github.com/palantir/tslint) fix suggestions for rule violations, and fixes them. Running via the CLI is done by [autotslint-cli](https://github.com/automutate/autotslint-cli).
 
-### Usage
+### Code Usage
 
 ```typescript
 import { AutoTslinter } from "autotslint/lib/index";

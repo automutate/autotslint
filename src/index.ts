@@ -1,6 +1,7 @@
 import { AutoMutator } from "automutate/lib/automutator";
+import { ILogger } from "automutate/lib/logger";
 import { ConsoleLogger } from "automutate/lib/loggers/consoleLogger";
-import { IFileMutationSettings, FileMutationsApplier } from "automutate/lib/mutationsAppliers/fileMutationsApplier";
+import { FileMutationsApplier } from "automutate/lib/mutationsAppliers/fileMutationsApplier";
 import * as path from "path";
 
 import { ITslintRunnerSettings, TslintMutationsProvider } from "./tslintMutationsProvider";
@@ -13,6 +14,11 @@ export interface IAutoTslintSettings {
      * Settings to run waves of TSLint.
      */
     linter: ITslintRunnerSettings;
+
+    /**
+     * Generates output messages for significant operations.
+     */
+    logger?: ILogger;
 }
 
 /**
@@ -25,7 +31,7 @@ export class AutoTslinter extends AutoMutator {
      * @param settings   Settings to run AutoTslint.
      */
     public constructor(settings: IAutoTslintSettings) {
-        const logger: ConsoleLogger = new ConsoleLogger();
+        const logger: ILogger = settings.logger || new ConsoleLogger();
 
         super(
             new FileMutationsApplier(

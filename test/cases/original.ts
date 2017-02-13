@@ -1,0 +1,1 @@
+const aaa = <string>"bbb";
