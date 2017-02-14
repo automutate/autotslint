@@ -36,9 +36,10 @@ export class AutoTslinter extends AutoMutator {
             path.join(__dirname, "./mutators")
         ];
 
-        super(
-            new FileMutationsApplier(logger, { mutatorDirectories }),
-            new TslintMutationsProvider(settings.linter),
-            logger);
+        super({
+            logger,
+            mutationsApplier: new FileMutationsApplier({ logger, mutatorDirectories }),
+            mutationsProvider: new TslintMutationsProvider(settings.linter)
+        });
     }
 }
