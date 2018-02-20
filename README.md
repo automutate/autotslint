@@ -1,5 +1,7 @@
 # AutoTSLint
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/automutate/autotslint.svg)](https://greenkeeper.io/)
+
 Applies fix suggestions reported by [TSLint](https://github.com/palantir/tslint), accounting for file conflicts and multiple waves of fixes.
 
 ## CLI Usage
