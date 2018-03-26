@@ -2,19 +2,24 @@ import * as fs from "fs";
 import * as optimist from "optimist";
 import * as path from "path";
 
-import { AutoTslinter } from "./index";
+import { createAutoTslinter } from "./autoTslinter";
+
+// tslint:disable no-console no-unsafe-any
 
 /**
  * CLI result status code, as 0 (success) or 1 (failure).
  */
-export type AutoTSLintCliResult = 0 | 1;
+export enum AutoTSLintCliResult {
+    Failure = 1,
+    Success = 0,
+}
 
 /**
  * Runs AutoTSLint by parsing command-line arguments.
- * 
- * @returns A Promise for the CLI result status code.
+ *
+ * @returns Promise for the CLI result status code.
  */
-export function cli(): Promise<AutoTSLintCliResult> {
+export const cli = async (): Promise<AutoTSLintCliResult> => {
     const processed = optimist
         .usage("Usage: $0 [options] file ...")
         .options({
@@ -42,46 +47,44 @@ export function cli(): Promise<AutoTSLintCliResult> {
                 describe: "rules directory",
                 type: "string",
             },
-            "type-check": {
-                describe: "enable type checking when linting a project",
-                type: "boolean",
-            },
             v: {
                 alias: "version",
                 describe: "current version",
                 type: "boolean",
             },
         });
-    const argv: any = processed.argv;
 
-    if (argv.help || (!argv._.length && !argv.c)) {
+    if (processed.argv.help || (!processed.argv._.length && !processed.argv.c)) {
         console.log(processed.help());
         console.log("See https://github.com/automutate/autotslint");
-        return Promise.resolve(0);
+
+        return Promise.resolve(AutoTSLintCliResult.Success);
     }
 
-    if (argv.version) {
+    if (processed.argv.version) {
         const packagePath: string = path.join(__dirname, "../package.json");
         console.log(JSON.parse(fs.readFileSync(packagePath).toString()).version);
-        return Promise.resolve(0);
+
+        return Promise.resolve(AutoTSLintCliResult.Success);
     }
 
-    const autoTslinter: AutoTslinter = new AutoTslinter({
+    const autoTslinter = createAutoTslinter({
         linter: {
-            config: argv.c,
-            exclude: argv.exclude,
-            files: argv._,
-            project: argv.project,
-            rulesDirectory: argv.r,
-            typeCheck: argv["type-check"]
-        }
+            config: processed.argv.c,
+            exclude: processed.argv.exclude === undefined
+                ? []
+                : processed.argv.exclude,
+            files: processed.argv._,
+            project: processed.argv.project,
+            rulesDirectory: processed.argv.r,
+        },
     });
 
-    return autoTslinter
-        .run()
-        .then((): number => 0)
-        .catch((error: Error): number => {
-            console.error("Error:", error);
-            return 1;
-        });
-}
+    try {
+        await autoTslinter.run();
+        return AutoTSLintCliResult.Success;
+    } catch (error) {
+        console.error("Error:", error);
+        return AutoTSLintCliResult.Failure;
+    }
+};

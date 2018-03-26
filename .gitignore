@@ -7,4 +7,5 @@ src/**/*.d.ts
 src/**/*.js
 test/**/*.d.ts
 test/**/*.js
+test/**/*.js.map
 test/cases/**/actual.ts

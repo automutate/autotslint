@@ -1,15 +1,22 @@
 {
     "compilerOptions": {
         "declaration": true,
+        "lib": [
+            "es2015"
+        ],
         "module": "commonjs",
-        "target": "es6",
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
         "noImplicitAny": true,
-        "noImplicitThis": true,
         "noImplicitReturns": true,
+        "noImplicitThis": true,
         "noUnusedLocals": true,
-        "strictNullChecks": true,
+        "noUnusedParameters": true,
+        "outDir": "lib",
+        "pretty": true,
         "sourceMap": true,
-        "outDir": "lib"
+        "strict": true,
+        "target": "es3"
     },
     "exclude": [
         "node_modules",

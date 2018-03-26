@@ -1,9 +1,12 @@
-import { IMutationsProvider, IMutationsWave } from "automutate/lib/mutationsProvider";
-import * as stream from "stream";
-import { Runner as TslintRunner } from "tslint/lib/runner";
+import { IMutationsProvider, IMutationsWave } from "automutate";
 import { IRuleFailureJson } from "tslint/lib/language/rule/rule";
+import { Options, run, Status } from "tslint/lib/runner";
+import { groupFailuresToFileMutations } from "./tslintFixesTransformer";
 
-import { TslintFixesTransformer } from "./tslintFixesTransformer";
+const defaultOptions = {
+    exclude: [] as string[],
+    files: [],
+};
 
 /**
  * Settings to run waves of TSLint.
@@ -12,12 +15,12 @@ export interface ITslintRunnerSettings /* overrides TSLint.IRunnerOptions */ {
     /**
      * Path to a configuration file.
      */
-    config?: string;
+    config: string;
 
     /**
      * Exclude globs from path expansion.
      */
-    exclude?: string | string[];
+    exclude?: string[];
 
     /**
      * File paths to lint.
@@ -45,63 +48,51 @@ export interface ITslintRunnerSettings /* overrides TSLint.IRunnerOptions */ {
  */
 export class TslintMutationsProvider implements IMutationsProvider {
     /**
-     * Transforms TSLint Fix objects to automutate mutations.
-     */
-    private readonly fixesTransformer: TslintFixesTransformer = new TslintFixesTransformer();
-
-    /**
-     * Intermediary stream to hold lint results.
-     */
-    private readonly stream: stream.PassThrough;
-
-    /**
-     * Settings to run TSLint.
-     */
-    private readonly settings: ITslintRunnerSettings;
-
-    /**
-     * Runs a wave of TSLint.
-     */
-    private readonly runner: TslintRunner;
-
-    /**
      * Initializes a new instance of the TslintMutationsProvider class.
-     * 
-     * @param settings   Settings to run TSLint.
+     *
+     * ...
      */
-    public constructor(settings: ITslintRunnerSettings) {
-        this.settings = settings;
-        this.stream = new stream.PassThrough();
-        this.runner = new TslintRunner(
-            Object.assign(
-                {} as any,
-                settings,
-                {
-                    fix: true,
-                    format: "json"
-                }),
-            this.stream);
-    }
+    public constructor(
+        private readonly lintOptions: Partial<Options>,
+        private readonly logger: typeof console,
+    ) { }
 
     /**
-     * @returns A Promise for a wave of file mutations.
+     * Provides the next wave of file mutations.
+     *
+     * @returns Promise for a wave of file mutations.
      */
     public async provide(): Promise<IMutationsWave> {
-        return new Promise((resolve, reject): void => {
-            this.runner.run((): void => {
-                const results: Buffer | null = this.stream.read();
-                
-                if (!results) {
-                    resolve({});
-                    return;
-                }
+        const settings: Options = {
+            ...defaultOptions,
+            ...this.lintOptions,
+            // TSLint will always print suggested fixes.
+            // This just stops it from being applied to the original files.
+            fix: false,
+            format: "json",
+        };
 
-                resolve({
-                    fileMutations: this.fixesTransformer.groupFailuresToFileMutations(
-                        (JSON.parse(results.toString()) as IRuleFailureJson[])
-                            .filter((ruleFailure: IRuleFailureJson): boolean => !!ruleFailure.fix))
-                });
-            });
-        });
+        let loggedErrors = "";
+        let loggedData = "";
+        const lintLogger = {
+            error: (data: string | Buffer): void => {
+                loggedErrors += data.toString();
+            },
+            log: (data: string | Buffer): void => {
+                loggedData += data.toString();
+            },
+        };
+
+        const result = await run(settings, lintLogger);
+        if (result === Status.FatalError) {
+            this.logger.error(loggedErrors);
+            return {};
+        }
+
+        const ruleFailures = JSON.parse(loggedData) as IRuleFailureJson[];
+
+        return {
+            fileMutations: groupFailuresToFileMutations(ruleFailures),
+        };
     }
 }
